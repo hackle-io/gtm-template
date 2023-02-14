@@ -13,7 +13,7 @@
 # limitations under the License.
 
 homepage: "https://hackle.io/"
-documentation: "https://docs-kr.hackle.io/docs/sdk-intro "
+documentation: "https://docs-kr.hackle.io/docs/sdk-intro/"
 versions:
-  - sha: 5f02a788b90ae804f86b04aa24af8937e567874a
+  - sha: dcd7faa0d72d0e1eafc1515fb4bec72eb8ec8ea6
     changeNotes: Initial Version
