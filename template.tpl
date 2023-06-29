@@ -1,12 +1,4 @@
-﻿___TERMS_OF_SERVICE___
-
-By creating or modifying this file you agree to Google Tag Manager's Community
-Template Gallery Developer Terms of Service available at
-https://developers.google.com/tag-manager/gallery-tos (or such other URL as
-Google may provide), as modified from time to time.
-
-
-___INFO___
+﻿___INFO___
 
 {
   "type": "TAG",
@@ -14,7 +6,8 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "categories": [
-    "EXPERIMENTATION", "ANALYTICS"
+    "EXPERIMENTATION",
+    "ANALYTICS"
   ],
   "displayName": "Hackle Browser SDK",
   "brand": {
@@ -36,19 +29,11 @@ ___TEMPLATE_PARAMETERS___
     "type": "SELECT",
     "name": "type",
     "displayName": "Tag Type",
-    "macrosInSelect": true,
+    "macrosInSelect": false,
     "selectItems": [
-      {
-        "value": "init",
-        "displayValue": "init"
-      },
       {
         "value": "track",
         "displayValue": "Track (send event)"
-      },
-      {
-        "value": "setUserId",
-        "displayValue": "setUserId"
       },
       {
         "value": "setUserProperties",
@@ -58,19 +43,6 @@ ___TEMPLATE_PARAMETERS___
     "simpleValueType": true,
     "defaultValue": "track",
     "alwaysInSummary": true
-  },
-  {
-    "type": "TEXT",
-    "name": "sdkKey",
-    "displayName": "SDK Key",
-    "simpleValueType": true,
-    "enablingConditions": [
-      {
-        "paramName": "type",
-        "paramValue": "init",
-        "type": "EQUALS"
-      }
-    ]
   },
   {
     "type": "TEXT",
@@ -131,50 +103,10 @@ ___TEMPLATE_PARAMETERS___
   },
   {
     "type": "TEXT",
-    "name": "userId",
-    "displayName": "User ID",
+    "name": "extraProperties",
+    "displayName": "Read From Variables",
     "simpleValueType": true,
-    "enablingConditions": [
-      {
-        "paramName": "type",
-        "paramValue": "setUserId",
-        "type": "EQUALS"
-      }
-    ]
-  },
-  {
-    "type": "SIMPLE_TABLE",
-    "name": "userProperties",
-    "displayName": "User Properties",
-    "simpleTableColumns": [
-      {
-        "defaultValue": "",
-        "displayName": "Key",
-        "name": "key",
-        "type": "TEXT"
-      },
-      {
-        "defaultValue": "",
-        "displayName": "Value",
-        "name": "value",
-        "type": "TEXT"
-      }
-    ],
-    "enablingConditions": [
-      {
-        "paramName": "type",
-        "paramValue": "setUserProperties",
-        "type": "EQUALS"
-      }
-    ]
-  },
-  {
-    "type": "TEXT",
-    "name": "hackleClientName",
-    "displayName": "Hackle Client Name",
-    "simpleValueType": true,
-    "defaultValue": "hackleClient",
-    "valueHint": "전역변수로 사용될 HackleClient 인스턴스의 이름 입니다."
+    "canBeEmptyString": true
   }
 ]
 
@@ -184,12 +116,10 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 // APIs
 const log = require("logToConsole");
 const copyFromWindow = require("copyFromWindow");
-const injectScript = require('injectScript');
 const getType = require("getType");
+const Object = require('Object');
 
 // Constants
-const VERSION = "11.10.x";
-const URL = "https://cdn.jsdelivr.net/npm/@hackler/javascript-sdk@" + VERSION + "/lib/index.gtm.min.js";
 const WRAPPER_NAMESPACE = "_hackle";
 const LOG_PREFIX = "[Hackle / GTM] ";
 
@@ -212,6 +142,26 @@ function parseProperty(property) {
   return null;
 }
 
+function assign(source, target) {
+  if (getType(target) !== 'object') {
+    return source;
+  }
+
+  if (getType(source) !== 'object') {
+    return target;
+  }
+
+  var obj = {};
+  Object.keys(source).forEach(function(k) {
+    obj[k] = source[k];
+  });
+  Object.keys(target).forEach(function(k) {
+    obj[k] = target[k];
+  });
+
+  return obj;
+}
+
 const onSuccess = () => {
   log(LOG_PREFIX + "DATA: ", data);
 
@@ -219,17 +169,11 @@ const onSuccess = () => {
   const hackleClientName =  data.hackleClientName || "hackleClient";
 
   switch (data.type) {
-    case "init": {
-      log("init");
-      _hackle(hackleClientName, "init", data.sdkKey);
-      break;
-    }
     case "track": {
-      _hackle(hackleClientName, "track", data.eventKey, parseProperty(data.eventProperties));
-      break;
-    }
-    case "setUserId": {
-      _hackle(hackleClientName, "setUserId", data.userId);
+      var eventProperties = parseProperty(data.eventProperties);
+      var extraProperties = data.extraProperties;
+      var properties = assign(eventProperties, extraProperties);
+      _hackle(hackleClientName, "track", data.eventKey, properties);
       break;
     }
     case "setUserProperties": {
@@ -246,12 +190,11 @@ const onFailure = () => {
   return fail("Failed to load the Hackle namespace");
 };
 
-
 const _hackle = copyFromWindow(WRAPPER_NAMESPACE);
 if (_hackle) {
   onSuccess();
 } else {
-  injectScript(URL, onSuccess, onFailure, 'hackle');
+  onFailure();
 }
 
 
@@ -269,7 +212,7 @@ ___WEB_PERMISSIONS___
           "key": "environments",
           "value": {
             "type": 1,
-            "string": "debug"
+            "string": "all"
           }
         }
       ]
@@ -329,36 +272,45 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "clientAnnotations": {
-      "isEditedByUser": true
-    },
-    "isRequired": true
-  },
-  {
-    "instance": {
-      "key": {
-        "publicId": "inject_script",
-        "versionId": "1"
-      },
-      "param": [
-        {
-          "key": "urls",
-          "value": {
-            "type": 2,
-            "listItem": [
-              {
-                "type": 1,
-                "string": "https://cdn.jsdelivr.net/npm/@hackler/*"
               },
               {
-                "type": 1,
-                "string": "https://cdn.hackle.io/*"
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "hackleClient"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
               }
             ]
           }
