@@ -188,7 +188,7 @@ const injectScript = require('injectScript');
 const getType = require("getType");
 
 // Constants
-const VERSION = "11.39.0";
+const VERSION = "11.44.0";
 const URL = "https://cdn2.hackle.io/npm/@hackler/javascript-sdk@" + VERSION + "/lib/index.gtm.min.js";
 const WRAPPER_NAMESPACE = "_hackle";
 const LOG_PREFIX = "[Hackle / GTM] ";
