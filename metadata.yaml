@@ -15,9 +15,9 @@
 homepage: "https://hackle.io/"
 documentation: "https://docs-kr.hackle.io/docs/sdk-intro/"
 versions:
+  - sha: c413cc93ddc43f985fac08b032a9e7289b4e6690
+    changeNotes: version 11.45.2 support
   - sha: 7b6dbf808c94826d5b171739ebbb772ed4add669
     changeNotes: version 11.44.0 support
   - sha: cb48417b0ac97f2f14250a4ab25f3a5d73372749
     changeNotes: version 11.39.0 support
-  - sha: 37681a27f7ae5bad7ff4da5df0d6ebd01f293135
-    changeNotes: version 11.38.0 support
